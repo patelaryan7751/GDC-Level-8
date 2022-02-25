@@ -2,6 +2,14 @@ from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
 from tasks.models import Task, TaskEmail, TaskHistory, User
 
+# signal for storing report schedule for a user
+
+
+@receiver(post_save, sender=User)
+def mailSchedule(sender, instance, created, **kwargs):
+    if created:
+        TaskEmail.objects.create(user=instance)
+
 
 @receiver(pre_save, sender=Task)
 def taskhistory_Update(sender, instance, **kwargs):
@@ -15,9 +23,3 @@ def taskhistory_Update(sender, instance, **kwargs):
             print("current:", current.status)
             TaskHistory.objects.create(
                 task_id=instance, old_status=previous.status, new_status=current.status)
-
-
-@receiver(post_save, sender=User)
-def create_user_settings(sender, instance, created, **kwargs):
-    if created:
-        TaskEmail.objects.create(user=instance)
